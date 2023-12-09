@@ -3,14 +3,16 @@ import time
 import random
 from chesspiece import KING_VAL, ROOK_VAL, PAWN_VAL, BISHOP_VAL, QUEEN_VAL, KNIGHT_VAL
 
+#Class to handle the Minimax algorithm and decision making for AI.
 class MinimaxAgent():
 
+    #creates Minimax agent, with a time limit and certain depth.
     def __init__(self):
         self.depth = 3
         self.time_limit = 100
         self.start_time = 0
     
-
+    #gets the AI's next move, given a current GameState.
     def get_next_move(self, gameState: Chessboard):
         alpha = -9999999999
         beta = 9999999999
@@ -18,6 +20,11 @@ class MinimaxAgent():
         score, piece_move = self.minimax_alpha_beta(gameState, False, None, 0, alpha, beta, self.start_time)
         return piece_move
 
+    #the minimax algorithm to determine the next move
+    #piece move - represents a piece and its moves (piece, [move1, move2,...])
+    #alpha - alpha component to alpha beta pruning
+    #beta - beta component to alpha beta pruning
+    #cur_time - time to cut off AI if need, never really happends.
     def minimax_alpha_beta(self, gameState: Chessboard, isPlayer, piece_move, cur_depth, alpha, beta, cur_time):
 
             #terminal state, return score. 
@@ -68,11 +75,12 @@ class MinimaxAgent():
                         maxAction = item
                 return maxAction[0], maxAction[1]
     
+    #evaluation function to determine the score of a chessboard.
     def evaluation_function(self, gameState: Chessboard):
         black_mat = sum(piece.value for piece in gameState.black_pieces)
         white_mat = sum(piece.value for piece in gameState.white_pieces)
         
-        # Initialize the evaluation score based on material balance
+        # Initialize the evaluation score based on difference of material 
         score = black_mat - white_mat
         
         # Check for terminal states
@@ -84,13 +92,17 @@ class MinimaxAgent():
         # Prioritize controlling the center, especially for knights and bishops
         middle_tiles = [(3, 3), (3, 4), (4, 3), (4, 4), (2, 5), (2, 2)]
         for black_piece in gameState.black_pieces:
-
+            
+            #add score if can castle.
             if black_piece.value == KING_VAL and black_piece.castled:
                 score += 1000
-                
+            
+            #add to score a mobility bonus, or the number of possible moves each piece can make
+            #to promote development.
             mobility_bonus = len(black_piece.GetLegalMoves(gameState))
             score += mobility_bonus
 
+            #prioritize moving knights out first.
             if black_piece.position in middle_tiles:
                 if black_piece.value == PAWN_VAL:
                     score += 150

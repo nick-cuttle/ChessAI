@@ -3,6 +3,7 @@ pygame.init()
 
 PIECE_SIZE = 100
 
+#Piece weights for minimax evaluation function.
 PAWN_VAL = 100
 ROOK_VAL = 500
 BISHOP_VAL = 330
@@ -10,7 +11,10 @@ KNIGHT_VAL = 320
 QUEEN_VAL = 900
 KING_VAL = 2000
 
+#Class to represent a chesspiece.
 class Chesspiece:
+
+    #creates a chess piece.
     def __init__(self, row, col, color, value):
         self.position = (row, col)
         self.color = color
@@ -18,18 +22,23 @@ class Chesspiece:
         self.value = value
         self.hasMoved = False
 
+    #string representation for piece.
     def __repr__(self):
-        return f"#{self.color}:{self.value}"
+        return f"{self.color}:{self.value}"
     
+    #returns all legal moves for a piece given a gamestate.
     def GetLegalMoves(self, gameState):
         return
     
+    #clones a piece.
     def clone(self):
         return
     
-    
-    
+
+#Pawn class.
 class Pawn(Chesspiece):
+
+    #creates a pawn.
     def __init__(self, row , col, color):
         super().__init__(row, col, color, PAWN_VAL)
         if color == "black":
@@ -41,6 +50,7 @@ class Pawn(Chesspiece):
             self.image = pygame.image.load("images/white-pawn.png")
             self.image = pygame.transform.scale(self.image, (PIECE_SIZE, PIECE_SIZE))
     
+
     def clone(self):
         new_pawn = Pawn(self.position[0], self.position[1], self.color)
         new_pawn.hasMoved = self.hasMoved
@@ -50,6 +60,7 @@ class Pawn(Chesspiece):
         legal_moves = []
         cur_pos = self.position 
 
+        #determine if can move 1 forward.
         move_1_row = cur_pos[0] + self.direction
         if (move_1_row >= 0 and move_1_row <= 7 and gameState.board[move_1_row][cur_pos[1]] == None):
             legal_moves.append( (move_1_row, cur_pos[1]) )
@@ -76,7 +87,10 @@ class Pawn(Chesspiece):
                 legal_moves.append(d2) 
         return legal_moves
 
+#Rook class.
 class Rook(Chesspiece):
+
+    #Creates rook object.
     def __init__(self, row , col, color):
         super().__init__(row, col, color, ROOK_VAL)
         if color == "black":
@@ -142,8 +156,10 @@ class Rook(Chesspiece):
         return legal_moves
 
 
-
+#Knight class.
 class Knight(Chesspiece):
+
+    #Creates Knight.
     def __init__(self, row , col, color):
         super().__init__(row, col, color, KNIGHT_VAL)
         if color == "black":
@@ -162,18 +178,23 @@ class Knight(Chesspiece):
         cur_pos = self.position
         legal_moves = []
 
+        #left hand side L's
         l1 = (cur_pos[0] - 1, cur_pos[1] - 2)
         l2 = (l1[0] + 2, l1[1])
 
+        #upper L's
         u1 = (cur_pos[0] - 2, cur_pos[1] - 1)
         u2 = (u1[0], u1[1] + 2)
 
+        #right side L's
         r1 = (cur_pos[0] - 1, cur_pos[1] + 2)
         r2 = (r1[0] + 2, r1[1])
 
+        #down side L's
         d1 = (cur_pos[0] + 2, cur_pos[1] - 1)
         d2 = (d1[0], d1[1] + 2)
 
+        #ensures 
         all_moves = [l1, l2, u1, u2, r1, r2, d1, d2]
         for move in all_moves:
             if 0 <= move[0] <= 7 and 0 <= move[1] <= 7:
@@ -185,8 +206,10 @@ class Knight(Chesspiece):
 
         return legal_moves
 
-
+#bishop class
 class Bishop(Chesspiece):
+
+
     def __init__(self, row , col, color):
         super().__init__(row, col, color, BISHOP_VAL)
         if color == "black":
@@ -267,8 +290,10 @@ class Bishop(Chesspiece):
         
         return legal_moves
                 
-
+#Queen class.
 class Queen(Chesspiece):
+
+    #Create Queen object.
     def __init__(self, row , col, color):
         super().__init__(row, col, color, QUEEN_VAL)
         if color == "black":
@@ -284,12 +309,17 @@ class Queen(Chesspiece):
         return new_queen
     
     def GetLegalMoves(self, gameState):
+
+        #Combines rooks and bishops moves.
         cur_pos = self.position
         bishop_moves = Bishop(cur_pos[0], cur_pos[1], self.color).GetLegalMoves(gameState)
         rook_moves = Rook(cur_pos[0], cur_pos[1], self.color).GetLegalMoves(gameState)
         return bishop_moves + rook_moves
 
+#King class.
 class King(Chesspiece):
+
+    #Create King object.
     def __init__(self, row , col, color):
         super().__init__(row, col, color, KING_VAL)
         self.castled = False
@@ -308,6 +338,7 @@ class King(Chesspiece):
     
     def GetLegalMoves(self, gameState):
         legal_moves = []
+        #Get all tiles adjacent to King.
         for row in range(self.position[0] - 1, self.position[0] + 2):
             for col in range(self.position[1] - 1, self.position[1] + 2):
                 if 0 <= row <= 7 and 0 <= col <= 7:

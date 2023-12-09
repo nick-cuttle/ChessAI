@@ -1,6 +1,6 @@
 import chesspiece
 
-
+#class to reprsent the gameState, which in essence is the chessboard.
 class Chessboard:
 
     NUM_COL = 8
@@ -25,6 +25,7 @@ class Chessboard:
         
         return result
     
+    #gets the appropiate king for whether it is the player or AI.
     def getKing(self, isPlayer):
         pieces = self.white_pieces
         if not isPlayer:
@@ -36,29 +37,46 @@ class Chessboard:
         
         return None
 
+    #determines if the current state is a win.
     def isWin(self):
         for piece in self.white_pieces:
             if piece.value == chesspiece.KING_VAL:
                 return False
         return True
     
+    #determines if the current state is a loss.
     def isLose(self):
         for piece in self.black_pieces:
             if piece.value == chesspiece.KING_VAL:
                 return False
         return True
     
+    def isCheckmate(self, isPlayer):
+
+        if len(self.isCheck(isPlayer)) == 0:
+            return False
+        
+        moves = self.GetLegalMoves(isPlayer)
+
+        for piece, move_list in moves:
+            for move in move_list:
+                state_clone = self.clone()
+                piece_clone = state_clone.board[piece.position[0]][piece.position[1]]
+                state_clone.move_piece(piece_clone, move)
+                if len(state_clone.isCheck(isPlayer)) == 0:
+                    return False
+        
+        return True
+    
     def get_piece(self, pos):
 
-       
         all_pieces = self.white_pieces + self.black_pieces
-
         for piece in all_pieces:
-
             if piece.position == pos:
                 return piece
         return None
     
+    #determines the threat's to king for AI or player.
     def isCheck(self, isPlayer):
         piece_king = self.getKing(isPlayer)
         moves = self.GetLegalMoves( not isPlayer)
@@ -69,11 +87,7 @@ class Chessboard:
             
         return threat_list
         
-
-
-        
-        
-    
+    #gets all legal moves for AI or player.
     def GetLegalMoves(self, isPlayer):
         legal_moves = []
         pieces = self.white_pieces
@@ -85,6 +99,7 @@ class Chessboard:
 
         return legal_moves
     
+    #generates the successor board given a piece move(a piece and a move).
     def GenerateSuccessor(self, piece_move):
         successor_state = self.clone()
         piece_pos = piece_move[0].position
@@ -93,6 +108,7 @@ class Chessboard:
         successor_state.move_piece(piece, move)
         return successor_state
 
+    #clones a board.
     def clone(self):
         new_state = Chessboard()
         new_board = [[None for _ in range(self.NUM_COLUMNS)] for _ in range(self.NUM_ROWS)]
@@ -110,20 +126,17 @@ class Chessboard:
                         new_state.black_pieces.append(clone_piece)
 
         new_state.board = new_board
-        #new_state.score = self.score
         return new_state
     
+    #moves a piece to a position.
     def move_piece(self, piece, position):
         if piece == None:
             return
+        
         legal_moves = piece.GetLegalMoves(self)
         if position in legal_moves:
 
             self.board[piece.position[0]][piece.position[1]] = None
-            # if piece.color == "white":
-            #     self.white_pieces.remove(piece)
-            # else:
-            #     self.black_pieces.remove(piece)
 
             piece.position = position
 
@@ -150,10 +163,8 @@ class Chessboard:
                     self.white_pieces.remove(piece)
                     self.white_pieces.append(white_queen)
                     self.board[position[0]][position[1]] = white_queen
-                #piece.hasMoved = True
 
             #castling for the king
-
             if piece.value == chesspiece.KING_VAL:
                 
                 if not piece.hasMoved and position == (7, 6) or position == (0, 6):
@@ -164,19 +175,13 @@ class Chessboard:
                         rook.hasMoved = True
                         self.board[piece.position[0]][7] = None
                         piece.castled = True
-                        #print("CASTLED")
-
 
             piece.hasMoved = True
             
-            #castling for rook
-            # if piece.value == chesspiece.ROOK_VAL:
-            #     piece.hasMoved = True
-            
-            #castling for the rook.
-
+    #initalizes the board
     def init_board(self):
         board = [[None for _ in range(self.NUM_COLUMNS)] for _ in range(self.NUM_ROWS)]
+
         #place white and black pawns
         for column in range(self.NUM_COLUMNS):
             white_pawn = chesspiece.Pawn(6, column, "white")
@@ -240,28 +245,4 @@ class Chessboard:
 
         self.board = board
 
-    def isIsolatedPawn(self, piece):
-
-        if piece.value == chesspiece.PAWN_VAL:
-            # Get the position of the pawn.
-            row, col = piece.position
-
-            # Check the adjacent files (left and right).
-            left_file = max(col - 1, 0)
-            right_file = min(col + 1, 7)
-
-            # Check if there are friendly pawns on the adjacent files.
-            for file in [left_file, right_file]:
-                for r in range(8):
-                    if self.board[r][file] != None:
-                        adjacent_piece = self.board[r][file]
-                        if (
-                            adjacent_piece.value == chesspiece.PAWN_VAL
-                            and adjacent_piece.color == piece.color
-                        ):
-                            return False  # Not an isolated pawn.
-
-            return True  # Isolated pawn.
-
-        return False  # The piece is not a pawn.
     

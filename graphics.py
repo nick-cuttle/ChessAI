@@ -2,6 +2,8 @@ import pygame
 pygame.init()
 import chessboard;
 
+font = pygame.font.Font(None, 92)
+#Handles all the drawing and visual aspects.
 class Graphics:
 
     def __init__(self):
@@ -12,9 +14,25 @@ class Graphics:
         self.blue = (76, 123,  195)
         self.white = (255, 255, 255)
         self.TILE_SIZE = self.SCREEN_WIDTH // 8
+
+        #tile player selected.
         self.selected_tile = None
+
+        #reprsents all tiles that player can move to from selected tile.
         self.move_tiles = []
 
+    
+    def draw_winner(self, winner):
+        text_surface = font.render(winner + " Has Won", True, (255, 0, 0))
+
+        x = (self.SCREEN_WIDTH - text_surface.get_width()) // 2
+        y = (self.SCREEN_HEIGHT - text_surface.get_height()) // 2
+        self.screen.blit(text_surface, (x, self.SCREEN_HEIGHT // 2))
+        #pygame.display.flip()
+
+
+
+    #draws the screen
     def draw_screen(self, board: chessboard.Chessboard):
 
         #draw the tiles and pieces
@@ -41,6 +59,8 @@ class Graphics:
                     self.screen.blit(current_piece.image, (blit_x, blit_y))
                     
         pygame.display.flip()
+
+
 
 
 
